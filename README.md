@@ -1,21 +1,22 @@
 # Archive-BakFiles - PowerShell Backup Archiver
-> A robust PowerShell script that archives all `.bak` files found in a Trellix ePolicy Orechesrator directory tree while preserving the original folder structure and generating a detailed manifest with MD5 checksums.
+
+A robust PowerShell script that archives all `.bak` files found in a directory tree while preserving the original folder structure and generating a detailed manifest with MD5 checksums.
 
 ## Features
 
-- 🔍 **Recursive search**: Automatically finds all `.bak` files in subdirectories
-- 📦 **Structure preservation**: Maintains original folder hierarchy in ZIP archive
-- 🔐 **MD5 checksums**: Calculates MD5 hash for each file to verify integrity
-- 📋 **Detailed manifest**: Generates comprehensive documentation of archived files
-- 📊 **Progress tracking**: Real-time progress bar during file analysis
-- 💾 **Batch processing**: Handles large file sets efficiently (configurable batch size)
-- 📄 **Multiple output formats**: Text manifest in ZIP + optional CSV export
+- 🔍 **Recursive Search**: Automatically finds all `.bak` files in subdirectories
+- 📦 **Structure Preservation**: Maintains original folder hierarchy in ZIP archive
+- 🔐 **MD5 Checksums**: Calculates MD5 hash for each file to verify integrity
+- 📋 **Detailed Manifest**: Generates comprehensive documentation of archived files
+- 📊 **Progress Tracking**: Real-time progress bar during file analysis
+- 💾 **Batch Processing**: Handles large file sets efficiently (configurable batch size)
+- 📄 **Multiple Output Formats**: Text manifest in ZIP + optional CSV export
 
 ## Requirements
 
 - Windows PowerShell 5.1 or later
 - PowerShell Core 7.x (cross-platform compatible)
-- Appropriate read permissions on source directory on Trellix ePolicy Orchestrator
+- Appropriate read permissions on source directory
 - Write permissions on destination directory
 
 ## Installation
@@ -26,7 +27,7 @@
 
 ## Usage
 
-### Basic Usage
+### Basic usage
 
 Archive all `.bak` files with auto-generated ZIP name:
 
@@ -34,19 +35,19 @@ Archive all `.bak` files with auto-generated ZIP name:
 .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator"
 ```
 
-### Specify Custom ZIP Name
+### Specify custom ZIP Name
 
 ```powershell
 .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DestinationZip "C:\Archives\backup_2025-10-29.zip"
 ```
 
-### Generate Additional CSV Manifest
+### Generate additional CSVmanifest
 
 ```powershell
-.\Archive-BakFiles.ps1 -RootPath "C:\MyData" -GenerateManifest
+.\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -GenerateManifest
 ```
 
-### Advanced Usage with All Options
+### Advanced usage with all options
 
 ```powershell
 .\Archive-BakFiles.ps1 `
@@ -57,6 +58,19 @@ Archive all `.bak` files with auto-generated ZIP name:
     -Verbose
 ```
 
+### Archive and delete source files (Space Cleanup)
+
+```powershell
+# Verify archive first, then delete sources to free up disk space
+.\Archive-BakFiles.ps1 `
+    -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" `
+    -DestinationZip "D:\Archives\old_backups.zip" `
+    -DeleteSourceFiles `
+    -GenerateManifest
+```
+
+⚠️ **Important**: Always verify the archive is complete and readable before using `-DeleteSourceFiles`!
+
 ## Parameters
 
 | Parameter | Type | Required | Default | Description |
@@ -65,16 +79,40 @@ Archive all `.bak` files with auto-generated ZIP name:
 | `DestinationZip` | String | No | Auto-generated | Output ZIP file path |
 | `BatchSize` | Integer | No | 400 | Number of files per compression batch (50-5000) |
 | `GenerateManifest` | Switch | No | False | Generate additional CSV manifest file |
+| `DeleteSourceFiles` | Switch | No | False | **Delete** source files after archiving (⚠️ use with caution) |
+
+## Default behavior (Safe Mode)
+
+**By default, the script does NOT delete source files.** This is the safest approach:
+
+- ✅ Original `.bak` files remain in their original locations
+- ✅ You can verify the archive before removing sources
+- ✅ No risk of data loss if archiving fails
+- ✅ Allows for comparison between original and archived files
+
+### Deleting source files
+
+To delete source files after successful archiving, use the `-DeleteSourceFiles` flag:
+
+```powershell
+.\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DeleteSourceFiles
+```
+
+⚠️ **Warning**: This operation is permanent and cannot be undone. The script will:
+1. Create the archive first
+2. Display a warning message
+3. Delete each file individually
+4. Report success/failure for each deletion
 
 ## Output
 
-### ZIP Archive Contents
+### ZIP Archive contents
 
 The ZIP file contains:
 - All `.bak` files with preserved folder structure
 - `bak_manifest_[timestamp].txt` - Detailed text manifest
 
-### Manifest Information
+### Manifest information
 
 Each archived file is documented with:
 
@@ -89,7 +127,7 @@ Each archived file is documented with:
 | **Last Modified** | Original file modification date |
 | **Archived Date** | Date when archive was created |
 
-### Manifest Example
+### Manifest example
 
 ```
 =============================================================================
@@ -97,19 +135,19 @@ Each archived file is documented with:
 =============================================================================
 Archive date     : 2025-10-29 14:32:15
 Analyzed root    : C:\Program Files (x86)\McAfee\ePolicy Orchestrator
-ZIP archive      : C:\temp\bak-archive_20251029_143215.zip
+ZIP archive      : C:\Program Files (x86)\McAfee\bak-archive_20251029_143215.zip
 Number of files  : 127
 =============================================================================
 
 File: database.bak
-  Original full path       : C:\Program Files (x86)\McAfee\ePolicy Orchestrator\data\database.bak
-  Relative path in ZIP     : DB\database.bak
+  Original full path       : C:\Program Files (x86)\McAfee\ePolicy Orchestrator\db\database.bak
+  Relative path in ZIP     : db\database.bak
   Size                     : 2048.75 KB (2.00 MB)
   MD5 Hash                 : 5D41402ABC4B2A76B9719D911017C592
   Last modified            : 2025-10-15 10:23:45
 ```
 
-### Console Output
+### Console output
 
 During execution, the script displays:
 - Number of `.bak` files found
@@ -127,7 +165,7 @@ When using `-GenerateManifest`, creates `[zipname]_manifest.csv` containing all 
 ### Example 1: Simple archive
 
 ```powershell
-.\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator"
+.\Archive-BakFiles.ps1 -RootPath "C:\Data"
 ```
 
 **Output**: `C:\bak-archive_20251029_143215.zip` with embedded manifest
@@ -168,10 +206,10 @@ The script includes robust error handling:
 
 ## Performance considerations
 
-- **Batch size**: Default 400 files per batch prevents command line overflow
-- **MD5 calculation**: May take time for large files; progress is displayed
-- **Memory usage**: Efficient for thousands of files
-- **Network paths**: Supported but may be slower (UNC paths)
+- **Batch Size**: Default 400 files per batch prevents command line overflow
+- **MD5 Calculation**: May take time for large files; progress is displayed
+- **Memory Usage**: Efficient for thousands of files
+- **Network Paths**: Supported but may be slower (UNC paths)
 
 ## Restoring files
 
@@ -182,7 +220,7 @@ To restore files from the archive:
 3. Copy files to their original locations
 4. Optionally verify MD5 hashes to ensure integrity
 
-### Verification Example
+### Verification example
 
 ```powershell
 # Verify a restored file
@@ -227,11 +265,17 @@ if ($currentHash -eq $file.MD5Hash) {
 
 ## Best practices
 
-1. **Test first**: Run on a small subset before large archives
-2. **Keep manifests**: Store CSV manifests separately for quick reference
-3. **Verify archives**: Periodically test ZIP file integrity
-4. **Regular archives**: Schedule script execution for routine backups
-5. **Network drives**: Use local drives for better performance
+1. **Test First**: Run on a small subset before large archives
+2. **Keep Manifests**: Store CSV manifests separately for quick reference
+3. **Verify Archives**: Periodically test ZIP file integrity
+4. **Regular Archives**: Schedule script execution for routine backups
+5. **Network Drives**: Use local drives for better performance
+6. **Safe Deletion Workflow**:
+   - Archive files WITHOUT `-DeleteSourceFiles` first
+   - Extract and verify a few random files from the archive
+   - Check the manifest for completeness
+   - Only then re-run with `-DeleteSourceFiles` if you need to free space
+7. **Keep Original Backups**: Consider keeping at least one generation of source files before deletion
 
 ## Security considerations
 
@@ -256,6 +300,15 @@ For issues or questions:
 - **v2.0** - Added MD5 checksums
 - **v1.0** - Initial release with basic archiving
 
+## Contributing
+
+Suggestions for improvements:
+- Support for other file extensions
+- SHA256 hash option
+- Compression level parameter
+- Exclusion filters
+- Email notifications
+
 ---
 
-**Last updated**: October 29, 2025
+**Last Updated**: October 29, 2025
