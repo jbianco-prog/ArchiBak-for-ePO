@@ -18,6 +18,7 @@
 .PARAMETER DeleteSourceFiles
   (Optional) If specified, deletes source .bak files after successful archiving.
   By default, source files are preserved (safe mode).
+  ⚠️ WARNING: Deleting .bak files from Trellix ePO installation may VOID support!
 
 .EXAMPLE
   .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator"
@@ -28,6 +29,7 @@
 .EXAMPLE
   .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DeleteSourceFiles
   Archives and then deletes the original .bak files to free up space.
+  ⚠️ Multiple confirmations required due to Trellix ePO support implications.
 #>
 
 [CmdletBinding()]
@@ -190,8 +192,80 @@ File: $($item.FileName)
 
     # Delete source files if requested
     if ($DeleteSourceFiles) {
-        Write-Host "`n=== DELETING SOURCE FILES ==="
-        Write-Warning "Source files will be permanently deleted. This operation cannot be undone."
+        Write-Host "`n" -NoNewline
+        Write-Host "=============================================================================" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "                            ⚠️  CRITICAL WARNING  ⚠️                          " -ForegroundColor Red -BackgroundColor Black
+        Write-Host "=============================================================================" -ForegroundColor Red -BackgroundColor Black
+        Write-Host ""
+        Write-Host "  DELETING .BAK FILES FROM TRELLIX ePO INSTALLATION DIRECTORY" -ForegroundColor Red -BackgroundColor Black
+        Write-Host ""
+        Write-Host "  ⛔ THIS ACTION WILL VOID YOUR TRELLIX SUPPORT ⛔" -ForegroundColor Red -BackgroundColor Black
+        Write-Host ""
+        Write-Host "  Removing backup files from the ePO installation may:" -ForegroundColor Yellow
+        Write-Host "  • Make your installation UNSUPPORTED by Trellix Technical Support" -ForegroundColor Yellow
+        Write-Host "  • Prevent rollback capabilities in case of system issues" -ForegroundColor Yellow
+        Write-Host "  • Violate compliance and audit requirements" -ForegroundColor Yellow
+        Write-Host "  • Result in inability to restore previous configurations" -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "  THIS OPERATION IS PERMANENT AND CANNOT BE UNDONE!" -ForegroundColor Red -BackgroundColor Black
+        Write-Host ""
+        Write-Host "=============================================================================" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "`n"
+        
+        # First pop-up confirmation
+        Add-Type -AssemblyName System.Windows.Forms
+        $result1 = [System.Windows.Forms.MessageBox]::Show(
+            "⚠️ CRITICAL WARNING ⚠️`n`n" +
+            "You are about to DELETE source .bak files from:`n" +
+            "$RootPath`n`n" +
+            "⛔ THIS WILL VOID YOUR TRELLIX ePO SUPPORT ⛔`n`n" +
+            "Deleting backup files from ePO installation directory may make your " +
+            "system UNSUPPORTED by Trellix Technical Support and prevent system recovery.`n`n" +
+            "Are you ABSOLUTELY SURE you want to proceed?",
+            "⚠️ Trellix ePO - Support Risk Warning",
+            [System.Windows.Forms.MessageBoxButtons]::YesNo,
+            [System.Windows.Forms.MessageBoxIcon]::Warning
+        )
+        
+        if ($result1 -ne [System.Windows.Forms.DialogResult]::Yes) {
+            Write-Host "Operation CANCELLED by user. Source files preserved." -ForegroundColor Green
+            Write-Host "Archive created successfully without deleting source files."
+            return
+        }
+        
+        # Second pop-up confirmation (more aggressive)
+        $result2 = [System.Windows.Forms.MessageBox]::Show(
+            "⛔ FINAL CONFIRMATION REQUIRED ⛔`n`n" +
+            "This is your LAST CHANCE to cancel!`n`n" +
+            "Deleting these files will:`n" +
+            "• VOID Trellix Technical Support for this ePO installation`n" +
+            "• PERMANENTLY delete $($files.Count) backup file(s)`n" +
+            "• PREVENT system rollback capabilities`n" +
+            "• This action CANNOT be undone`n`n" +
+            "Type 'DELETE' in the next prompt to confirm deletion, or click No to cancel.",
+            "⛔ FINAL WARNING - Confirm Deletion",
+            [System.Windows.Forms.MessageBoxButtons]::YesNo,
+            [System.Windows.Forms.MessageBoxIcon]::Error
+        )
+        
+        if ($result2 -ne [System.Windows.Forms.DialogResult]::Yes) {
+            Write-Host "Operation CANCELLED by user. Source files preserved." -ForegroundColor Green
+            Write-Host "Archive created successfully without deleting source files."
+            return
+        }
+        
+        # Third confirmation - typed confirmation
+        Write-Host "`nFINAL CONFIRMATION: Type 'DELETE' (in capital letters) to proceed: " -ForegroundColor Red -NoNewline
+        $confirmation = Read-Host
+        
+        if ($confirmation -ne "DELETE") {
+            Write-Host "`nOperation CANCELLED. You did not type 'DELETE' correctly." -ForegroundColor Green
+            Write-Host "Source files preserved. Archive created successfully."
+            return
+        }
+        
+        Write-Host "`n=== DELETING SOURCE FILES ===" -ForegroundColor Red
+        Write-Host "⚠️ Proceeding with permanent deletion..." -ForegroundColor Yellow
         
         $deletedCount = 0
         $failedCount = 0
@@ -208,10 +282,12 @@ File: $($item.FileName)
             }
         }
         
-        Write-Host "Successfully deleted: $deletedCount file(s)"
+        Write-Host "`nDeletion Summary:" -ForegroundColor Yellow
+        Write-Host "Successfully deleted: $deletedCount file(s)" -ForegroundColor $(if ($deletedCount -gt 0) { "Red" } else { "Gray" })
         if ($failedCount -gt 0) {
             Write-Warning "Failed to delete: $failedCount file(s)"
         }
+        Write-Host "`n⚠️ REMINDER: Your Trellix ePO support may be affected by this deletion." -ForegroundColor Red
     } else {
         Write-Host "`nSource files preserved (safe mode). Use -DeleteSourceFiles to remove originals."
     }
