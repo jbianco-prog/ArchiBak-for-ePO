@@ -1,28 +1,24 @@
 <#
 .SYNOPSIS
-  Archives all .bak files found under a given root directory, preserving
-  the folder structure in a ZIP file and generating a manifest of original paths.
+  Archives all .bak files found under a given root directory, preserving the folder structure in a ZIP file and generating a manifest of original paths.
 
 .PARAMETER RootPath
   Root folder from which to search for .bak files.
 
 .PARAMETER DestinationZip
-  (Optional) Output ZIP file path. If not provided, a timestamped name
-  is generated next to the root folder.
+  (Optional) Output ZIP file path. If not provided, a timestamped name is generated next to the root folder.
 
 .PARAMETER BatchSize
-  (Optional) Number of files added to the ZIP per batch to avoid
-  command line length limits. Default is 400.
+  (Optional) Number of files added to the ZIP per batch to avoid command line length limits. Default is 400.
 
 .PARAMETER GenerateManifest
-  (Optional) If specified, generates a CSV file with the complete list
-  of archived files and their original paths.
+  (Optional) If specified, generates a CSV file with the complete list of archived files and their original paths.
 
 .EXAMPLE
-  .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\Test"
+  .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator"
 
 .EXAMPLE
-  .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\Test" -DestinationZip "c:\SSL\bak_2025-09-08.zip" -GenerateManifest
+  .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DestinationZip "C:\temp" -GenerateManifest
 #>
 
 [CmdletBinding()]
