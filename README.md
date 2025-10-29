@@ -41,7 +41,7 @@ Archive all `.bak` files with auto-generated ZIP name:
 .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DestinationZip "C:\Archives\backup_2025-10-29.zip"
 ```
 
-### Generate additional CSVmanifest
+### Generate additional CSV manifest
 
 ```powershell
 .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -GenerateManifest
@@ -58,7 +58,7 @@ Archive all `.bak` files with auto-generated ZIP name:
     -Verbose
 ```
 
-### Archive and delete source files (Space Cleanup)
+### Archive and delete source files (space cleanup)
 
 ```powershell
 # Verify archive first, then delete sources to free up disk space
@@ -156,7 +156,7 @@ During execution, the script displays:
 - Preview table of first 5 archived files
 - Summary statistics
 
-### Optional CSV Export
+### Optional CSV export
 
 When using `-GenerateManifest`, creates `[zipname]_manifest.csv` containing all manifest data in spreadsheet-compatible format.
 
@@ -311,4 +311,4 @@ Suggestions for improvements:
 
 ---
 
-**Last Updated**: October 29, 2025
+**Last updated**: October 29, 2025
