@@ -23,7 +23,7 @@
   .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator"
 
 .EXAMPLE
-  .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DestinationZip "c:\SSL\bak_2025-09-08.zip" -GenerateManifest
+  .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DestinationZip "c:\temp\bak_2025-09-08.zip" -GenerateManifest
 
 .EXAMPLE
   .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DeleteSourceFiles
