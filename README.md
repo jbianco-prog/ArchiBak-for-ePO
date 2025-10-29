@@ -1,16 +1,15 @@
 # Archive-BakFiles - PowerShell Backup Archiver
-
-A robust PowerShell script that archives all `.bak` files found in a directory tree while preserving the original folder structure and generating a detailed manifest with MD5 checksums.
+> A robust PowerShell script that archives all `.bak` files found in a directory tree while preserving the original folder structure and generating a detailed manifest with MD5 checksums.
 
 ## Features
 
-- 🔍 **Recursive Search**: Automatically finds all `.bak` files in subdirectories
-- 📦 **Structure Preservation**: Maintains original folder hierarchy in ZIP archive
-- 🔐 **MD5 Checksums**: Calculates MD5 hash for each file to verify integrity
-- 📋 **Detailed Manifest**: Generates comprehensive documentation of archived files
-- 📊 **Progress Tracking**: Real-time progress bar during file analysis
-- 💾 **Batch Processing**: Handles large file sets efficiently (configurable batch size)
-- 📄 **Multiple Output Formats**: Text manifest in ZIP + optional CSV export
+- 🔍 **Recursive search**: Automatically finds all `.bak` files in subdirectories
+- 📦 **Structure preservation**: Maintains original folder hierarchy in ZIP archive
+- 🔐 **MD5 checksums**: Calculates MD5 hash for each file to verify integrity
+- 📋 **Detailed manifest**: Generates comprehensive documentation of archived files
+- 📊 **Progress tracking**: Real-time progress bar during file analysis
+- 💾 **Batch processing**: Handles large file sets efficiently (configurable batch size)
+- 📄 **Multiple output formats**: Text manifest in ZIP + optional CSV export
 
 ## Requirements
 
@@ -89,6 +88,7 @@ Archive all `.bak` files with auto-generated ZIP name:
 - ✅ You can verify the archive before removing sources
 - ✅ No risk of data loss if archiving fails
 - ✅ Allows for comparison between original and archived files
+- ✅ Maintains Trellix ePO support compliance
 
 ### Deleting source files
 
@@ -98,11 +98,28 @@ To delete source files after successful archiving, use the `-DeleteSourceFiles` 
 .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DeleteSourceFiles
 ```
 
-⚠️ **Warning**: This operation is permanent and cannot be undone. The script will:
+⚠️ **CRITICAL WARNING FOR TRELLIX ePO INSTALLATIONS**: 
+
+When using `-DeleteSourceFiles` on a Trellix ePO installation directory, the script will:
+
+1. **Display a critical warning banner** in RED explaining support implications
+2. **Show first pop-up warning** about voiding Trellix Technical Support
+3. **Show second pop-up confirmation** (final warning with error icon)
+4. **Require typed confirmation** - You must type 'DELETE' in capital letters
+5. Only after all 3 confirmations will proceed with deletion
+
+**Why these warnings?**
+- ⛔ Deleting .bak files from ePO installation **may VOID Trellix Technical Support**
+- ⛔ Prevents system rollback and recovery capabilities
+- ⛔ May violate compliance and audit requirements
+- ⛔ This operation is **PERMANENT and CANNOT be undone**
+
+The script will:
 1. Create the archive first
-2. Display a warning message
-3. Delete each file individually
-4. Report success/failure for each deletion
+2. Display multiple warnings about Trellix ePO support implications
+3. Require multiple confirmations (2 pop-ups + 1 typed)
+4. Delete each file individually
+5. Report success/failure for each deletion
 
 ## Output
 
@@ -206,10 +223,10 @@ The script includes robust error handling:
 
 ## Performance considerations
 
-- **Batch Size**: Default 400 files per batch prevents command line overflow
-- **MD5 Calculation**: May take time for large files; progress is displayed
-- **Memory Usage**: Efficient for thousands of files
-- **Network Paths**: Supported but may be slower (UNC paths)
+- **Batch size**: Default 400 files per batch prevents command line overflow
+- **MD5 calculation**: May take time for large files; progress is displayed
+- **Memory usage**: Efficient for thousands of files
+- **Network paths**: Supported but may be slower (UNC paths)
 
 ## Restoring files
 
@@ -276,6 +293,11 @@ if ($currentHash -eq $file.MD5Hash) {
    - Check the manifest for completeness
    - Only then re-run with `-DeleteSourceFiles` if you need to free space
 7. **Keep Original Backups**: Consider keeping at least one generation of source files before deletion
+8. **Trellix ePO Specific**:
+   - **NEVER** use `-DeleteSourceFiles` on production ePO servers without approval
+   - Consult Trellix support before removing any .bak files from ePO directory
+   - Maintain backup retention policy aligned with compliance requirements
+   - Consider moving files instead of deleting them
 
 ## Security considerations
 
@@ -283,6 +305,38 @@ if ($currentHash -eq $file.MD5Hash) {
 - Manifests contain full file paths (sensitive information)
 - ZIP files are not encrypted by default
 - Consider additional encryption for sensitive data
+
+## Trellix ePO specific warnings
+
+⚠️ **CRITICAL: If you are archiving files from a Trellix ePolicy Orchestrator (ePO) installation:**
+
+### Do NOT use `-DeleteSourceFiles` unless absolutely necessary
+
+Deleting `.bak` files from your ePO installation directory can have serious consequences:
+
+- **Support Implications**: May void or complicate Trellix Technical Support
+- **Recovery Risk**: Removes your ability to rollback configurations
+- **Compliance Issues**: May violate internal audit and compliance requirements
+- **Best Practice Violation**: Trellix recommends maintaining backup files
+
+### If you must delete files
+
+The script includes **triple confirmation** protection:
+1. Large RED warning banner in console
+2. First pop-up dialog about support implications
+3. Second pop-up with error icon (final warning)
+4. Typed confirmation required (must type 'DELETE')
+
+You can cancel at any point during these confirmations.
+
+### Recommended approach for ePO
+
+Instead of using `-DeleteSourceFiles`, consider:
+1. Archive files to external storage
+2. Verify archive integrity
+3. Move (don't delete) old .bak files to a separate retention folder
+4. Maintain at least one generation of backups
+5. Consult Trellix support before removing any files
 
 ## License
 
