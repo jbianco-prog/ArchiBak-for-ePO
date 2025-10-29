@@ -1,5 +1,5 @@
 # Archive-BakFiles - PowerShell Backup Archiver
-> A robust PowerShell script that archives all `.bak` files found in a directory tree while preserving the original folder structure and generating a detailed manifest with MD5 checksums.
+> A robust PowerShell script that archives all `.bak` files found in a Trellix ePolicy Orechesrator directory tree while preserving the original folder structure and generating a detailed manifest with MD5 checksums.
 
 ## Features
 
@@ -15,7 +15,7 @@
 
 - Windows PowerShell 5.1 or later
 - PowerShell Core 7.x (cross-platform compatible)
-- Appropriate read permissions on source directory
+- Appropriate read permissions on source directory on Trellix ePolicy Orchestrator
 - Write permissions on destination directory
 
 ## Installation
