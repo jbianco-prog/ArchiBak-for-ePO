@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
   Archives all .bak files found under a given root directory, preserving the folder structure in a ZIP file and generating a manifest of original paths.
+  By default, source files are NOT deleted after archiving (safe mode).
 
 .PARAMETER RootPath
   Root folder from which to search for .bak files.
@@ -14,11 +15,19 @@
 .PARAMETER GenerateManifest
   (Optional) If specified, generates a CSV file with the complete list of archived files and their original paths.
 
+.PARAMETER DeleteSourceFiles
+  (Optional) If specified, deletes source .bak files after successful archiving.
+  By default, source files are preserved (safe mode).
+
 .EXAMPLE
   .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator"
 
 .EXAMPLE
-  .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DestinationZip "C:\temp" -GenerateManifest
+  .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DestinationZip "c:\SSL\bak_2025-09-08.zip" -GenerateManifest
+
+.EXAMPLE
+  .\Archive-BakFiles.ps1 -RootPath "C:\Program Files (x86)\McAfee\ePolicy Orchestrator" -DeleteSourceFiles
+  Archives and then deletes the original .bak files to free up space.
 #>
 
 [CmdletBinding()]
@@ -35,7 +44,10 @@ param(
     [int]$BatchSize = 400,
 
     [Parameter(Mandatory = $false)]
-    [switch]$GenerateManifest
+    [switch]$GenerateManifest,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$DeleteSourceFiles
 )
 
 try {
@@ -176,6 +188,34 @@ File: $($item.FileName)
         Pop-Location
     }
 
+    # Delete source files if requested
+    if ($DeleteSourceFiles) {
+        Write-Host "`n=== DELETING SOURCE FILES ==="
+        Write-Warning "Source files will be permanently deleted. This operation cannot be undone."
+        
+        $deletedCount = 0
+        $failedCount = 0
+        
+        foreach ($file in $files) {
+            try {
+                Remove-Item -LiteralPath $file.FullName -Force -ErrorAction Stop
+                $deletedCount++
+                Write-Verbose "Deleted: $($file.FullName)"
+            }
+            catch {
+                $failedCount++
+                Write-Warning "Failed to delete: $($file.FullName) - $($_.Exception.Message)"
+            }
+        }
+        
+        Write-Host "Successfully deleted: $deletedCount file(s)"
+        if ($failedCount -gt 0) {
+            Write-Warning "Failed to delete: $failedCount file(s)"
+        }
+    } else {
+        Write-Host "`nSource files preserved (safe mode). Use -DeleteSourceFiles to remove originals."
+    }
+
     # Generate CSV file if requested
     if ($GenerateManifest) {
         $csvPath = $DestinationZip -replace '\.zip$', '_manifest.csv'
@@ -185,10 +225,15 @@ File: $($item.FileName)
 
     Write-Host "`n=== ARCHIVE COMPLETED ==="
     Write-Host "Source files      : $($files.Count)"
-    Write-Host "ZIP archive       : $DestinationZip"
+    Write-Host "Archive ZIP       : $DestinationZip"
     Write-Host "Manifest (text)   : Included in ZIP"
     if ($GenerateManifest) {
         Write-Host "Manifest (CSV)    : $csvPath"
+    }
+    if ($DeleteSourceFiles) {
+        Write-Host "Source files      : DELETED"
+    } else {
+        Write-Host "Source files      : PRESERVED"
     }
 
     # Display preview of original paths
