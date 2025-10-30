@@ -1,4 +1,4 @@
-# Archive-BakFiles - PowerShell Backup Archiver for Trellix ePO 5.10 OnPremise
+# Archive-BakFiles - PowerShell Backup Archiver for Trellix ePO 5.10 OnPremise (Unsupported, Community ressource)
 > A robust PowerShell script that archives all `.bak` files found in a directory tree while preserving the original folder structure and generating a detailed manifest with MD5 checksums.
 
 ## Features
